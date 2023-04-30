@@ -36,6 +36,7 @@ from webdriver_manager.microsoft import EdgeChromiumDriverManager
 import tkinter as tk
 from tkinter import messagebox, ttk
 from math import ceil
+import tempfile
 from exceptions import *
 
 
@@ -62,11 +63,70 @@ MAX_REDEEMS = 1
 auto_redeem_counter = 0
 
 
-def isProxyWorking(proxy: str) -> bool:
+def createProxyExtension(proxy_dir: str, username: str, password: str) -> None:
+    """Create proxy extension"""
+    import string
+    # skipcq: PYL-C0209
+    manifest_json = """
+{
+    "version": "1.0.0",
+    "manifest_version": 2,
+    "name": "%s",
+    "permissions": [
+        "proxy",
+        "tabs",
+        "unlimitedStorage",
+        "storage",
+        "<all_urls>",
+        "webRequest",
+        "webRequestBlocking"
+    ],
+    "background": {
+        "scripts": ["background.js"]
+    },
+    "minimum_chrome_version":"70.0.0"
+}
+    """ % (
+        ''.join(random.choices(string.ascii_uppercase + string.digits, k=20))
+    )
+
+    # skipcq: PYL-C0209
+    background_js = """
+function callbackFn(details) {
+    return {
+        authCredentials: {
+            username: "%s",
+            password: "%s"
+        }
+    };
+}
+chrome.webRequest.onAuthRequired.addListener(
+    callbackFn,
+    {urls: ["<all_urls>"]},
+    ['blocking']
+);
+    """ % (
+        username,
+        password,
+    )
+
+    if os.path.isdir(proxy_dir):
+        with open(os.path.join(proxy_dir, "manifest.json"), 'w') as f:
+            f.write(manifest_json)
+        with open(os.path.join(proxy_dir, "background.js"), 'w') as f:
+            f.write(background_js)
+
+
+def isProxyWorking(proxy: str, auth: str) -> bool:
     """Check if proxy is working or not"""
     try:
+        protocol = "https"
+        if auth != "":
+            protocol = "http"
+            proxy = proxy + "@" + auth
+
         requests.get("https://www.google.com/",
-                     proxies={"https": proxy}, timeout=5)
+                     proxies={protocol: proxy}, timeout=5)
         return True
     except:
         return False
@@ -110,7 +170,7 @@ def retry_on_500_errors(function):
     return wrapper
 
 
-def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = None) -> WebDriver:
+def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = None, proxy_auth: str = "") -> WebDriver:
     """Create Chrome browser"""
     from selenium.webdriver.chrome.options import Options as ChromeOptions
     from selenium.webdriver.edge.options import Options as EdgeOptions
@@ -138,8 +198,15 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
         prefs["profile.managed_default_content_settings.images"] = 2
     if ARGS.account_browser:
         prefs["detach"] = True
-    if proxy is not None:
-        if isProxyWorking(proxy):
+
+    create_proxy_ext = False
+    proxy_user = proxy_pass = ""
+    if proxy != "" and proxy is not None:
+        if proxy_auth != "" and proxy_auth is not None:
+            proxy_user, proxy_pass = proxy_auth.split(":")
+        ok = isProxyWorking(proxy, proxy_auth)
+        if ok:
+            create_proxy_ext = True
             options.add_argument(f'--proxy-server={proxy}')
             prBlue(f"Using proxy: {proxy}")
         else:
@@ -147,7 +214,9 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
                 prYellow(
                     "[PROXY] Your entered proxy is not working, rechecking the provided proxy.")
                 time.sleep(5)
-                if isProxyWorking(proxy):
+                ok = isProxyWorking(proxy, proxy_auth)
+                if ok:
+                    create_proxy_ext = True
                     options.add_argument(f'--proxy-server={proxy}')
                     prBlue(f"Using proxy: {proxy}")
                 elif ARGS.skip_if_proxy_dead:
@@ -160,6 +229,7 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
             else:
                 prYellow(
                     "[PROXY] Your entered proxy is not working, continuing without proxy.")
+
     options.add_experimental_option("prefs", prefs)
     options.add_experimental_option("useAutomationExtension", False)
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
@@ -171,12 +241,27 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
     if platform.system() == 'Linux':
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
-    if ARGS.edge:
-        browser = webdriver.Edge(options=options) if ARGS.no_webdriver_manager else webdriver.Edge(
-            service=Service(EdgeChromiumDriverManager().install()), options=options)
-    else:
-        browser = webdriver.Chrome(options=options) if ARGS.no_webdriver_manager else webdriver.Chrome(
+
+    def launch_browser():
+        """Start the browser"""
+        nonlocal options
+        if ARGS.edge:
+            return webdriver.Edge(options=options) if ARGS.no_webdriver_manager else webdriver.Edge(
+                service=Service(EdgeChromiumDriverManager().install()), options=options)
+
+        return webdriver.Chrome(options=options) if ARGS.no_webdriver_manager else webdriver.Chrome(
             service=Service(ChromeDriverManager().install()), options=options)
+
+    browser = None
+    if create_proxy_ext:
+        # use with so we don't have to care about the removal of tempdir
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            createProxyExtension(tmpdirname, proxy_user, proxy_pass)
+            options.add_argument("--load-extension=" + tmpdirname)
+            browser = launch_browser()
+    else:
+        browser = launch_browser()
+
     return browser
 
 
@@ -2656,7 +2741,8 @@ def farmer():
                 browser = browserSetup(
                     False,
                     PC_USER_AGENT,
-                    account.get('proxy', None)
+                    account.get('proxy', None),
+                    account.get('proxy_auth', "")
                 )
                 print('[LOGIN]', 'Logging-in...')
                 login(browser, account['username'], account['password'], account.get(
@@ -2720,7 +2806,8 @@ def farmer():
                 browser = browserSetup(
                     True,
                     account.get('mobile_user_agent', MOBILE_USER_AGENT),
-                    account.get('proxy', None)
+                    account.get('proxy', None),
+                    account.get('proxy_auth', "")
                 )
                 print('[LOGIN]', 'Logging-in mobile...')
                 login(browser, account['username'], account['password'], account.get(
@@ -2746,7 +2833,7 @@ def farmer():
                 if ARGS.redeem and auto_redeem_counter < MAX_REDEEMS:
                     # Start auto-redeem process
                     browser = browserSetup(
-                        False, PC_USER_AGENT, account.get('proxy', None))
+                        False, PC_USER_AGENT, account.get('proxy', None), account.get('proxy_auth', ""))
                     print('[LOGIN]', 'Logging-in...')
                     login(browser, account['username'], account['password'], account.get(
                         'totpSecret', None))
