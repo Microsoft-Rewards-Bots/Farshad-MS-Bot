@@ -344,38 +344,36 @@ def login(browser: WebDriver, email: str, pwd: str, totpSecret: str, isMobile: b
     if isElementExists(browser, By.ID, "passwordError"):
         raise InvalidCredentialsException
     answerTOTP(totpSecret)
-    try:
-        if ARGS.session:
-            # Click Yes to stay signed in.
-            browser.find_element(By.ID, 'idSIButton9').click()
-        else:
-            # Click No.
-            browser.find_element(By.ID, 'idBtn_Back').click()
-        if browser.title == "":
-            waitToLoadBlankPage()
-        if browser.title == "Microsoft account privacy notice" or isElementExists(browser, By.XPATH, '//*[@id="interruptContainer"]/div[3]/div[3]/img'):
-            acceptNewPrivacy()
-        if browser.title == "We're updating our terms" or isElementExists(browser, By.ID, 'iAccrualForm'):
-            answerUpdatingTerms()
-        if browser.title == 'Is your security info still accurate?' or isElementExists(browser, By.ID, 'iLooksGood'):
-            answerToSecurityQuestion()
-        # Click No thanks on break free from password question
-        if isElementExists(browser, By.ID, "setupAppDesc") or browser.title == "Break free from your passwords":
-            answerToBreakFreeFromPassword()
-    except NoSuchElementException:
-        # Check for if account has been locked.
-        if (
-            browser.title == "Your account has been temporarily suspended" or
-            isElementExists(browser, By.CLASS_NAME, "serviceAbusePageContainer  PageContainer") or
-            browser.current_url.startswith("https://account.live.com/Abuse")
-        ):
-            raise AccountLockedException
-        elif browser.title == "Help us protect your account" or \
-                browser.current_url.startswith("https://account.live.com/proofs/Add"):
-            handleUnusualActivity(browser, isMobile)
-            return
-        elif browser.title == "Help us secure your account" or browser.current_url.startswith("https://account.live.com/recover"):
-            raise UnusualActivityException
+    if ARGS.session:
+        # Click Yes to stay signed in.
+        browser.find_element(By.ID, 'idSIButton9').click()
+    else:
+        # Click No.
+        browser.find_element(By.ID, 'idBtn_Back').click()
+    if browser.title == "":
+        waitToLoadBlankPage()
+    if browser.title == "Microsoft account privacy notice" or isElementExists(browser, By.XPATH, '//*[@id="interruptContainer"]/div[3]/div[3]/img'):
+        acceptNewPrivacy()
+    if browser.title == "We're updating our terms" or isElementExists(browser, By.ID, 'iAccrualForm'):
+        answerUpdatingTerms()
+    if browser.title == 'Is your security info still accurate?' or isElementExists(browser, By.ID, 'iLooksGood'):
+        answerToSecurityQuestion()
+    # Click No thanks on break free from password question
+    if isElementExists(browser, By.ID, "setupAppDesc") or browser.title == "Break free from your passwords":
+        answerToBreakFreeFromPassword()
+    # Check for if account has been locked.
+    if (
+        browser.title == "Your account has been temporarily suspended" or
+        isElementExists(browser, By.CLASS_NAME, "serviceAbusePageContainer  PageContainer") or
+        browser.current_url.startswith("https://account.live.com/Abuse")
+    ):
+        raise AccountLockedException
+    elif browser.title == "Help us protect your account" or \
+            browser.current_url.startswith("https://account.live.com/proofs/Add"):
+        handleUnusualActivity(browser, isMobile)
+        return
+    elif browser.title == "Help us secure your account" or browser.current_url.startswith("https://account.live.com/recover"):
+        raise UnusualActivityException
     # Wait 5 seconds
     time.sleep(5)
     # Click Security Check
