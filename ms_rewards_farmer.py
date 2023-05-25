@@ -1566,7 +1566,12 @@ def completeMSNShoppingGame(browser: WebDriver) -> bool:
         correct_answer = options_elements[int(
             gaming_card.get_attribute("_correctAnswerIndex"))]
         # hover to show the select button
-        correct_answer.click()
+        try:
+            correct_answer.click()
+        except (ElementClickInterceptedException, ElementNotInteractableException):
+            browser.set_window_size(1920, 1080)
+            WebDriverWait(browser, 10).until(ec.element_to_be_clickable(correct_answer))
+            correct_answer.click()
         time.sleep(1)
         # click 'select' button
         select_button = correct_answer.find_element(
