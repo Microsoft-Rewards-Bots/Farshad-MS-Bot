@@ -5,7 +5,7 @@
   <img src="https://ForTheBadge.com/images/badges/built-with-love.svg" alt="cosmetic"/>
 </p>
 
-<h3 align="center"><a href="https://t.me/MRF_FZ">join Telegram group</a></h3>
+<h3 align="center"><a href="https://telegram.me/MRF_FZ">join Telegram group</a></h3>
 
 <pre align="center">
 ███╗   ███╗███████╗    ███████╗ █████╗ ██████╗ ███╗   ███╗███████╗██████╗ 
