@@ -3,8 +3,9 @@
   <img src="https://ForTheBadge.com/images/badges/built-by-developers.svg" alt="cosmetic"/>
   <img src="https://ForTheBadge.com/images/badges/uses-git.svg" alt="cosmetic"/>
   <img src="https://ForTheBadge.com/images/badges/built-with-love.svg" alt="cosmetic"/>
-  <a href="https://discord.gg/GaF8fFBtE3"><img src="https://dcbadge.vercel.app/api/server/GaF8fFBtE3"/></a>
 </p>
+
+<h3 align="center"><a href="https://t.me/MRF_FZ">join Telegram group</a></h3>
 
 <pre align="center">
 ███╗   ███╗███████╗    ███████╗ █████╗ ██████╗ ███╗   ███╗███████╗██████╗ 
