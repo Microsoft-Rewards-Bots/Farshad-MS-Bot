@@ -345,6 +345,8 @@ def login(browser: WebDriver, email: str, pwd: str, totpSecret: str, isMobile: b
         raise InvalidCredentialsException
     answerTOTP(totpSecret)
     try:
+        if browser.title == "Microsoft account privacy notice" or isElementExists(browser, By.XPATH, '//*[@id="interruptContainer"]/div[3]/div[3]/img'):
+            acceptNewPrivacy()
         if ARGS.session:
             # Click Yes to stay signed in.
             browser.find_element(By.ID, 'idSIButton9').click()
@@ -366,8 +368,6 @@ def login(browser: WebDriver, email: str, pwd: str, totpSecret: str, isMobile: b
         elif browser.title == "Help us secure your account" or browser.current_url.startswith("https://account.live.com/recover"):
             raise UnusualActivityException
     else:
-        if browser.title == "Microsoft account privacy notice" or isElementExists(browser, By.XPATH, '//*[@id="interruptContainer"]/div[3]/div[3]/img'):
-            acceptNewPrivacy()
         if browser.title == "":
             waitToLoadBlankPage()
         if browser.title == "We're updating our terms" or isElementExists(browser, By.ID, 'iAccrualForm'):
