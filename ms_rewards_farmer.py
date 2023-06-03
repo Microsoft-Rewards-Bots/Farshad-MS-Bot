@@ -2716,7 +2716,7 @@ def farmer():
             if not LOGS[CURRENT_ACCOUNT]['PC searches']:
                 browser = browserSetup(
                     False,
-                    PC_USER_AGENT,
+                    account.get('pc_user_agent', PC_USER_AGENT),
                     account.get('proxy', None)
                 )
                 print('[LOGIN]', 'Logging-in...')
