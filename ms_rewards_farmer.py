@@ -66,7 +66,6 @@ auto_redeem_counter = 0
 def isProxyWorking(proxy: str) -> bool:
     """Check if proxy is working or not"""
     try:
-        proxy = proxy.split("://")[1]
         requests.get(
             "https://www.google.com/",
             proxies={"https": proxy},
