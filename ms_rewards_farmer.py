@@ -66,10 +66,14 @@ auto_redeem_counter = 0
 def isProxyWorking(proxy: str) -> bool:
     """Check if proxy is working or not"""
     try:
-        requests.get("https://www.google.com/",
-                     proxies={"https": proxy}, timeout=5)
+        proxy = proxy.split("://")[1]
+        requests.get(
+            "https://www.google.com/",
+            proxies={"https": proxy},
+            timeout=5
+        )
         return True
-    except:
+    except Exception as e:
         return False
 
 
@@ -129,12 +133,15 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
     options.add_argument("user-agent=" + user_agent)
     options.add_argument('lang=' + LANG.split("-")[0])
     options.add_argument('--disable-blink-features=AutomationControlled')
-    prefs = {"profile.default_content_setting_values.geolocation": 2,
-             "credentials_enable_service": False,
-             "profile.password_manager_enabled": False,
-             "webrtc.ip_handling_policy": "disable_non_proxied_udp",
-             "webrtc.multiple_routes_enabled": False,
-             "webrtc.nonproxied_udp_enabled": False}
+    prefs = {
+        "profile.default_content_setting_values.geolocation": 2,
+        "credentials_enable_service": False,
+        "profile.password_manager_enabled": False,
+        "webrtc.ip_handling_policy": "disable_non_proxied_udp",
+        "webrtc.multiple_routes_enabled": False,
+        "webrtc.nonproxied_udp_enabled": False,
+        "profile.managed_default_content_settings.images": 1  
+    }
     if ARGS.no_images:
         prefs["profile.managed_default_content_settings.images"] = 2
     if ARGS.account_browser:
@@ -2973,6 +2980,7 @@ def main():
         input("Press Enter to close when you finished...")
         if browser is not None:
             browser.quit()
+        return
     run_at = None
     if ARGS.start_at:
         run_at = ARGS.start_at[0]
