@@ -19,6 +19,7 @@ import pyotp
 from functools import wraps
 from func_timeout import FunctionTimedOut, func_set_timeout
 from notifiers import get_notifier
+from selenium_stealth import stealth
 from selenium import webdriver
 from selenium.common.exceptions import (ElementNotInteractableException, NoAlertPresentException,
                                         NoSuchElementException, SessionNotCreatedException, TimeoutException,
@@ -172,6 +173,26 @@ def retry_on_500_errors(function):
 
 def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = None, proxy_auth: str = "") -> WebDriver:
     """Create Chrome browser"""
+    def launch_browser():
+        """Start the browser"""
+        nonlocal options
+        if ARGS.edge:
+            browser = webdriver.Edge(options=options) if ARGS.no_webdriver_manager else webdriver.Edge(
+                service=Service(EdgeChromiumDriverManager().install()), options=options)
+        else:
+            browser = webdriver.Chrome(options=options) if ARGS.no_webdriver_manager else webdriver.Chrome(
+                service=Service(ChromeDriverManager().install()), options=options)
+            stealth(
+                browser,
+                languages=["en-US", "en"],
+                vendor="Google Inc.",
+                platform="Win32",
+                webgl_vendor="Intel Inc.",
+                renderer="Intel Iris OpenGL Engine",
+                fix_hairline=True,
+            )
+        return browser
+    
     from selenium.webdriver.chrome.options import Options as ChromeOptions
     from selenium.webdriver.edge.options import Options as EdgeOptions
     if ARGS.edge:
@@ -241,16 +262,6 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
     if platform.system() == 'Linux':
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
-
-    def launch_browser():
-        """Start the browser"""
-        nonlocal options
-        if ARGS.edge:
-            return webdriver.Edge(options=options) if ARGS.no_webdriver_manager else webdriver.Edge(
-                service=Service(EdgeChromiumDriverManager().install()), options=options)
-
-        return webdriver.Chrome(options=options) if ARGS.no_webdriver_manager else webdriver.Chrome(
-            service=Service(ChromeDriverManager().install()), options=options)
 
     browser = None
     if create_proxy_ext:
