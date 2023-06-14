@@ -1547,6 +1547,8 @@ def completeMorePromotions(browser: WebDriver):
             if promotion['complete'] is False and promotion['pointProgressMax'] != 0:
                 if promotion['promotionType'] == "urlreward":
                     completeMorePromotionSearch(promotion)
+                elif not promotion['complete'] and promotion['pointProgressMax'] == 100 and promotion['promotionType'] == "":
+                    completeMorePromotionSearch(promotion)
                 elif promotion['promotionType'] == "quiz":
                     if promotion['pointProgressMax'] == 10:
                         completeMorePromotionABC(promotion)
