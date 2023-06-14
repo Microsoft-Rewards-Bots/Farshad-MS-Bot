@@ -98,7 +98,7 @@ You can use the simple installation guide <a href="https://github.com/farshadz19
             <li><code>--telegram TOKEN CHAT_ID</code> Sends logs to your telegram through your bot. The bot and TOKEN can be created using this official <a href="https://t.me/BotFather">bot</a>. CHAT_ID can be retrieved via this <a href="https://t.me/myidbot">bot</a> and using the <code>/getid</code> command.</li>
             <li><code>--discord WEBHOOK_URL</code> Use this argument to send logs to your Discord server through a webhook.</li>
             <li><code>--skip-unusual</code> Click on skip for 5 days on unusual activity detection.</li>
-            <li><code>--edge</code> Use Microsoft Edge webdriver instead of Chrome.</li>
+            <li><code>--browser BROWSER_NAME</code> Select browser to use for farming from this list ["chrome", "edge", "uc"], UC is undetected chrome and may not work well or doesn't work at all on your device.</li>
             <li><code>--skip-shopping</code> Skips MSN shopping game.</li>
             <li><code>--repeat-shopping</code> Repeat MSN shopping game. (So it runs twice per account consecutively)</li>
             <li><code>--no-webdriver-manager</code> Use system installed webdriver instead of webdriver-manager (Needed for ARM devices).</li>
