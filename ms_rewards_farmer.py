@@ -19,7 +19,9 @@ import pyotp
 from functools import wraps
 from func_timeout import FunctionTimedOut, func_set_timeout
 from notifiers import get_notifier
+from urllib.error import ContentTooShortError
 from selenium_stealth import stealth
+import undetected_chromedriver as uc
 from selenium import webdriver
 from selenium.common.exceptions import (ElementNotInteractableException, NoAlertPresentException,
                                         NoSuchElementException, SessionNotCreatedException, TimeoutException,
@@ -177,9 +179,11 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
     def launch_browser():
         """Start the browser"""
         nonlocal options
-        if ARGS.edge:
+        if ARGS.browser == "edge":
             browser = webdriver.Edge(options=options) if ARGS.no_webdriver_manager else webdriver.Edge(
                 service=Service(EdgeChromiumDriverManager().install()), options=options)
+        elif ARGS.browser == "uc":
+            browser = uc.Chrome(options=options)
         else:
             browser = webdriver.Chrome(options=options) if ARGS.no_webdriver_manager else webdriver.Chrome(
                 service=Service(ChromeDriverManager().install()), options=options)
@@ -196,7 +200,7 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
     
     from selenium.webdriver.chrome.options import Options as ChromeOptions
     from selenium.webdriver.edge.options import Options as EdgeOptions
-    if ARGS.edge:
+    if ARGS.browser == "edge":
         options = EdgeOptions()
     else:
         options = ChromeOptions()
@@ -1867,10 +1871,6 @@ def argumentParser():
                         help='This argument takes webhook url to send logs to Discord.',
                         type=str,
                         required=False)
-    parser.add_argument('--edge',
-                        help='Use Microsoft Edge webdriver instead of Chrome.',
-                        action='store_true',
-                        required=False)
     parser.add_argument('--account-browser',
                         nargs=1,
                         type=isSessionExist,
@@ -1954,8 +1954,16 @@ def argumentParser():
                         required=False,
                         nargs=1,
                         type=isAccountfileExists)
+    parser.add_argument("--browser",
+                        choices=["chrome", "edge", "uc"],
+                        metavar="<BROWSER>",
+                        required=False,
+                        )
     
     args = parser.parse_args()
+    print(args.browser)
+    if not args.browser:
+        args.browser = "chrome"
     if args.superfast or args.fast:
         global SUPER_FAST, FAST  # pylint: disable=global-statement
         SUPER_FAST = args.superfast
@@ -3017,6 +3025,12 @@ def farmer():
         cleanLogs()
         checkInternetConnection()
         farmer()
+        
+    except ContentTooShortError:
+        prRed("[ERROR] ContentTooShortError raised while launching UC browser !")
+        prRed("[ERROR] Use another browser and try again")
+        input("[ERROR] Press any key to close...")
+        os._exit(0)
 
     except Exception as e:
         if "executable needs to be in PATH" in str(e):
