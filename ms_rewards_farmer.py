@@ -184,6 +184,7 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
                 service=Service(EdgeChromiumDriverManager().install()), options=options)
         elif ARGS.browser == "uc":
             browser = uc.Chrome(options=options)
+            browser.maximize_window()
         else:
             browser = webdriver.Chrome(options=options) if ARGS.no_webdriver_manager else webdriver.Chrome(
                 service=Service(ChromeDriverManager().install()), options=options)
@@ -214,12 +215,15 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
     options.add_argument("user-agent=" + user_agent)
     options.add_argument('lang=' + LANG.split("-")[0])
     options.add_argument('--disable-blink-features=AutomationControlled')
-    prefs = {"profile.default_content_setting_values.geolocation": 2,
-             "credentials_enable_service": False,
-             "profile.password_manager_enabled": False,
-             "webrtc.ip_handling_policy": "disable_non_proxied_udp",
-             "webrtc.multiple_routes_enabled": False,
-             "webrtc.nonproxied_udp_enabled": False}
+    prefs = {
+        "profile.default_content_setting_values.geolocation": 2,
+        "credentials_enable_service": False,
+        "profile.password_manager_enabled": False,
+        "webrtc.ip_handling_policy": "disable_non_proxied_udp",
+        "webrtc.multiple_routes_enabled": False,
+        "webrtc.nonproxied_udp_enabled": False,
+        "profile.managed_default_content_settings.images": 1
+    }
     if ARGS.no_images:
         prefs["profile.managed_default_content_settings.images"] = 2
     if ARGS.account_browser:
@@ -256,9 +260,10 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
                 prYellow(
                     "[PROXY] Your entered proxy is not working, continuing without proxy.")
 
-    options.add_experimental_option("prefs", prefs)
-    options.add_experimental_option("useAutomationExtension", False)
-    options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    if not ARGS.browser == 'uc':
+        options.add_experimental_option("prefs", prefs)
+        options.add_experimental_option("useAutomationExtension", False)
+        options.add_experimental_option("excludeSwitches", ["enable-automation"])
 
     if ARGS.headless and ARGS.account_browser is None:
         options.add_argument("--headless=new")
