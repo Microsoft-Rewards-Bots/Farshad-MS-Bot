@@ -24,8 +24,8 @@ sudo apt-get install python3-tk
 mv accounts.json.sample accounts.json
 echo "py .\ms_rewards_farmer.py --redeem --session" > manual_run.sh
 echo "py .\ms_rewards_farmer.py --start-at 06:30 --everyday --redeem --session" > run_at_6.30am_daily.sh
-echo "py .\ms_rewards_farmer.py --redeem --session --edge" > manual_run_edge.sh
-echo "py .\ms_rewards_farmer.py --start-at 06:30 --everyday --redeem --session --edge" > run_at_6.30am_daily_edge.sh
+echo "py .\ms_rewards_farmer.py --redeem --session --browser edge" > manual_run_edge.sh
+echo "py .\ms_rewards_farmer.py --start-at 06:30 --everyday --redeem --session --browser edge" > run_at_6.30am_daily_edge.sh
 echo "py .\ms_rewards_farmer.py --calculator" > calculator.sh
 ```
 ## Adding Accounts
@@ -80,7 +80,9 @@ You may run the bot in the same way you would on any other linux device; simply 
 
 # Setup Microsoft-Rewards-bot in termux
 
-## Install required packages
+Install required packages</h2>
+
+### Just because it is possible. doesn't mean necessary. if possible please use a adequate machine to run this machine. Its not guaranteed that these instruction will work for all
 
 Chromium and chromedriver is there in tur repo and x11 repo contains some dependencies of chromium
 
@@ -101,3 +103,4 @@ Example:
 ```
 python3 ms_rewards_farmer.py --no-images --session --superfast --no-webdriver-manager --virtual-display 
 ```
+
