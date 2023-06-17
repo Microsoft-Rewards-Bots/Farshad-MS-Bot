@@ -45,8 +45,8 @@ from exceptions import *
 
 
 # Define user-agents
-PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36 Edg/113.0.1774.50'
-MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 12; SM-N9750) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Mobile Safari/537.36 EdgA/113.0.1774.38'
+PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.43'
+MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 12; SM-N9750) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36 EdgA/114.0.1823.41'
 
 POINTS_COUNTER = 0
 
@@ -60,7 +60,7 @@ CURRENT_ACCOUNT = None  # save current account into this variable when farming.
 LOGS = {}  # Dictionary of accounts to write in 'logs_accounts.txt'.
 FAST = False  # When this variable set True then all possible delays reduced.
 SUPER_FAST = False  # fast but super
-BASE_URL = "https://rewards.bing.com/"
+BASE_URL = "https://rewards.bing.com"
 
 # Auto Redeem - Define max amount of auto-redeems per run and counter
 MAX_REDEEMS = 1
@@ -999,7 +999,7 @@ def locateQuestCard(browser: WebDriver, activity: dict) -> WebElement:
     all_cards = browser.find_elements(By.CLASS_NAME, "rewards-card-container")
     for card in all_cards:
         data_bi_id = card.get_attribute("data-bi-id")
-        if activity["offerId"] == data_bi_id:
+        if activity["name"] == data_bi_id:
             return card
     else:
         raise NoSuchElementException(f"could not locate the provided card: {activity['name']}")
