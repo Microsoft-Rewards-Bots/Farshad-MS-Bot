@@ -2,7 +2,7 @@ certifi
 chardet
 idna
 requests
-selenium==4.4.3
+selenium==4.15.1
 selenium-stealth
 urllib3
 ipapi
